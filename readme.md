@@ -9,6 +9,45 @@ visibles, gérer le tracé course et déterminer le joueur en tête, et enfin
 ajouter des obstacles pour rendre la course plus intéressante. Vous pouvez
 réaliser ces tâches dans l'ordre de votre choix.
 
+### Mise en place
+
+Placez vous dans le répertoire de gKit à la racine et clonez ce dépôt :
+
+```
+git clone https://forge.univ-lyon1.fr/m1if27/projet-mmachine.git
+```
+
+éditez ensuite le fichier `premake4.lua` et ajoutez une ligne à la fin du
+fichier pour intégrer ce dossier à l'ensemble :
+
+```
+include projet-mmachine
+```
+
+Vous pouvez ensuite régénérer la configuration pour votre système de compilation
+
+```
+premake5 gmake
+```
+
+pour linux avec g++ ou windows avec mingw
+
+```
+premake5 vs2019
+```
+
+pour visual studio 2019, et ainsi de suite, comme spécifié dans la documentation
+de gKit. Le code de base contient :
+
+* `src` : le dossier contenant les fichiers de base pour vous aider
+* `app` : le dossier contenant les petites applications démo associées
+* `assets` : le dossier contenant le maillage du véhicule et l'image du circuit
+
+Pour rajouter votre propre application, inspirez-vous de celles existantes, et
+éditez le fichier `premake4.lua` à la racine du projet pour spécifier le nom de
+l'application créée.
+
+
 ### Caméra
 
 Le travail minimal dans cette section consiste à avoir une caméra qui suit les
