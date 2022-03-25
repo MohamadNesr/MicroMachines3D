@@ -93,7 +93,7 @@ On aurait tendance à vouloir placer `znear` à zéro et `zfar` à l'infini, mai
 c'est une mauvaise idée car l'écart entre ces deux valeur détermine la précision
 du test de profondeur réalisé pour ordonner les fragments de triangle sur chaque
 pixel. Si l'écart est trop grand, les fragments ne pourront plus être
-correctement ordonné, et le triangle affiché ne sera pas nécessairement le bon.
+correctement ordonnés, et le triangle affiché ne sera pas nécessairement le bon.
 Il faut donc s'assurer que les deux valeurs choisies permettent d'englober de la
 scène sans trop d'excès.
 
