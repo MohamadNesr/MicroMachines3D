@@ -23,8 +23,6 @@ class Player {
     void set_terrain(const Terrain* terrain) ;
     void set_controller(const Controller* controller) ;
     
-  private :
-
     //environment
     const Terrain* terrain_ ;
     void project(Point& candidate) ;
