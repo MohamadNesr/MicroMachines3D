@@ -9,6 +9,10 @@ visibles, gérer le tracé course et déterminer le joueur en tête, et enfin
 ajouter des obstacles pour rendre la course plus intéressante. Vous pouvez
 réaliser ces tâches dans l'ordre de votre choix.
 
+Si vous avez besoin d'éléments de décor supplémentaires, vous pouvez aller en
+récupérer par exemple des éléments chez [Quaternius](https://quaternius.com/).
+Vous y trouverez des véhicules, des arbres, des grenouilles, ...
+
 ### Mise en place
 
 Placez vous dans le répertoire de gKit à la racine et clonez ce dépôt :
