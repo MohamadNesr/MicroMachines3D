@@ -17,8 +17,9 @@ Placez vous dans le répertoire de gKit à la racine et clonez ce dépôt :
 git clone https://forge.univ-lyon1.fr/m1if27/projet-mmachine.git
 ```
 
-éditez ensuite le fichier `premake4.lua` et ajoutez une ligne à la fin du
-fichier pour intégrer ce dossier à l'ensemble :
+Pour versionner votre code, commencez plutôt par réaliser un fork et clonez
+votre propre version. Éditez ensuite le fichier `premake4.lua` et ajoutez une
+ligne à la fin du fichier pour intégrer ce dossier à l'ensemble :
 
 ```
 include projet-mmachine
