@@ -38,14 +38,14 @@ public:
       App(1024, 640), 
       controller1_(SDLK_UP, SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT),
       controller2_('z', 's', 'q', 'd'),
-      terrain_(Point(-20.f, -20.f, 0.f), Point(20.f, 20.f, 20.f), "mmachine/assets/circuit.png")
+      terrain_(Point(-20.f, -20.f, 0.f), Point(20.f, 20.f, 20.f), smart_path("../assets/circuit.png"))
     {}
     
     int init( )
     {
-        vehicule1_ = read_mesh("mmachine/assets/mmachine.obj") ;
+        vehicule1_ = read_mesh(smart_path("../assets/mmachine.obj")) ;
         vehicule1_.default_color(Color(1.0f, 0.f, 0.f)) ;
-        vehicule2_ = read_mesh("mmachine/assets/mmachine.obj") ;
+        vehicule2_ = read_mesh(smart_path("../assets/mmachine.obj")) ;
         vehicule2_.default_color(Color(0.0f, 0.f, 1.f)) ;
 
         joueur1_.set_terrain(&terrain_) ;

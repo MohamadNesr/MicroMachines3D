@@ -21,9 +21,9 @@ public:
     
     int init( )
     {
-        vehicule1_ = read_mesh("mmachine/assets/mmachine.obj") ;
+        vehicule1_ = read_mesh(smart_path("../assets/mmachine.obj")) ;
         vehicule1_.default_color(Color(1.0f, 0.f, 0.f)) ;
-        vehicule2_ = read_mesh("mmachine/assets/mmachine.obj") ;
+        vehicule2_ = read_mesh(smart_path("../assets/mmachine.obj")) ;
         vehicule2_.default_color(Color(0.0f, 0.f, 1.f)) ;
 
         joueur1_.set_terrain(&terrain_) ;
