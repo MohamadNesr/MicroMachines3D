@@ -30,6 +30,26 @@ Mesh make_grid( )
     return grid;
 }
 
+void playerCollision(Player &p1, Player &p2){
+  
+  if(distance(p1.position_, p2.position_) <=1){
+    std::cout<<" collision !"<< std::endl;
+    p1.speed_ =Vector(0,0,0);
+    p2.speed_ =Vector(0,0,0);
+    if((p2.direction_.x - p1.direction_.x == 0 && p1.direction_.x != 0 )|| (p2.direction_.y - p1.direction_.y == 0 && p1.direction_.y != 0)){
+        p1.position_ = p1.position_ - p2.direction_*0.2;
+        p2.position_ = p2.position_ + p1.direction_*0.2;
+    }else{
+      p1.position_ = p1.position_ + p2.direction_*0.2;
+      p2.position_ = p2.position_ + p1.direction_*0.2;
+    }
+    p1.forward_ = false;
+    p2.forward_ = false;
+
+  }
+    //std::cout<<" pas de collision"<< std::endl;
+}
+
 class Play : public App
 {
 public:
@@ -37,7 +57,7 @@ public:
     Play( ) : 
       App(1024, 640), 
       controller1_(SDLK_UP, SDLK_DOWN, SDLK_LEFT, SDLK_RIGHT),
-      controller2_('z', 's', 'q', 'd'),
+      controller2_('w', 's', 'a', 'd'),
       terrain_(Point(-20.f, -20.f, 0.f), Point(20.f, 20.f, 20.f), smart_path("../assets/circuit.png"))
     {}
     
@@ -58,7 +78,7 @@ public:
         joueur2_.spawn_at(Point(0,0,0), Vector(0,1,0)) ;
         joueur2_.activate() ;
 
-        m_camera.lookat(Point(-20.f, -20.f, 0.f), Point(20.f, 20.f, 20.f));
+       m_camera.lookat(Point(-20.f, -20.f, 0.f), Point(20.f, 20.f, 20.f));
 
         // etat openGL par defaut
         glClearColor(0.2f, 0.2f, 0.2f, 1.f);        // couleur par defaut de la fenetre
@@ -98,6 +118,23 @@ public:
         Transform player2_pos = joueur2_.transform() ;
         draw(vehicule2_, player2_pos, m_camera) ;
 
+        Point pmin, pmax;
+        pmin = Point(std::min(joueur1_.position_.x, joueur2_.position_.x),
+                    std::min(joueur1_.position_.y, joueur2_.position_.y),
+                    std::min(joueur1_.position_.z, joueur2_.position_.z));
+        pmax = Point(std::max(joueur1_.position_.x, joueur2_.position_.x),
+                    std::max(joueur1_.position_.y, joueur2_.position_.y),
+                    std::max(joueur1_.position_.z, joueur2_.position_.z));
+
+        float distJ1J2 = distance(joueur1_.position_,joueur2_.position_);
+      //  if(distJ1J2> 30){
+      //      m_camera.lookat(joueur1_.position_, distance(pmin,pmax)+10);
+      //  } else{
+            //m_camera.lookat(Point(center(joueur1_.position_ ,joueur2_.position_)), distance(pmin,pmax)+10);
+      //  }
+        
+        playerCollision(joueur1_, joueur2_);
+       // joueur1_.hasCollided();
         terrain_.draw(m_camera.view(), m_camera.projection(window_width(), window_height(), 45.f)) ;
 
         //reset
