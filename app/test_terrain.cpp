@@ -1,6 +1,7 @@
 #include "terrain.hpp"
 #include "controller.hpp"
 #include "player.hpp"
+#include "obstacle.hpp"
 
 #include "mat.h"
 #include "wavefront.h"
@@ -67,16 +68,22 @@ public:
         vehicule1_.default_color(Color(1.0f, 0.f, 0.f)) ;
         vehicule2_ = read_mesh(smart_path("../assets/mmachine.obj")) ;
         vehicule2_.default_color(Color(0.0f, 0.f, 1.f)) ;
+        obstacle_ = read_mesh(smart_path("../assets/tree.obj"));
+        obstacle_.default_color(Color(0.0f, 1.f, 0.f)) ;
 
         joueur1_.set_terrain(&terrain_) ;
         joueur1_.set_controller(&controller1_) ;
-        joueur1_.spawn_at(Point(0,0,0), Vector(0,1,0)) ;
+        joueur1_.spawn_at(Point(0.60,0,0), Vector(0,1,0)) ;
         joueur1_.activate() ;
 
         joueur2_.set_terrain(&terrain_) ;
         joueur2_.set_controller(&controller2_) ;
-        joueur2_.spawn_at(Point(0,0,0), Vector(0,1,0)) ;
+        joueur2_.spawn_at(Point(-0.60,0,0), Vector(0,1,0)) ;
         joueur2_.activate() ;
+
+        arbre_.set_terrain(&terrain_);
+        arbre_.spawn_at(Point(1,4,2), Vector(0,1,0));
+        arbre_.activate();
 
        m_camera.lookat(Point(-20.f, -20.f, 0.f), Point(20.f, 20.f, 20.f));
 
@@ -95,6 +102,7 @@ public:
     {
         vehicule1_.release();
         vehicule2_.release();
+        obstacle_.release();
         return 0;
     }
     
@@ -117,6 +125,8 @@ public:
         draw(vehicule1_, player1_pos, m_camera) ;
         Transform player2_pos = joueur2_.transform() ;
         draw(vehicule2_, player2_pos, m_camera) ;
+        Transform arbre_pos = arbre_.transform()* RotationX(90) * Scale(0.2,0.2,0.2);
+        draw(obstacle_, arbre_pos, m_camera) ;
 
         Point pmin, pmax;
         pmin = Point(std::min(joueur1_.position_.x, joueur2_.position_.x),
@@ -139,8 +149,10 @@ public:
 
         //reset
         if(key_state('r')) {
-          joueur1_.spawn_at(Point(0,0,0), Vector(0,1,0)) ;
+          joueur1_.spawn_at(Point(0.60,0,0), Vector(0,1,0)) ;
           joueur1_.activate() ;
+          joueur2_.spawn_at(Point(-0.60,0,0), Vector(0,1,0)) ;
+          joueur2_.activate() ;
         }
 
         return 1;
@@ -149,8 +161,10 @@ public:
 protected:
     Mesh vehicule1_;
     Mesh vehicule2_;
+    Mesh obstacle_;
     Player joueur1_;
     Player joueur2_;
+    Obstacle arbre_;
     KeyboardController controller1_ ;
     KeyboardController controller2_ ;
 

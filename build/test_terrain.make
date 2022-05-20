@@ -135,6 +135,7 @@ OBJECTS := \
 	$(OBJDIR)/mesh.o \
 	$(OBJDIR)/controller.o \
 	$(OBJDIR)/terrain.o \
+	$(OBJDIR)/obstacle.o \
 	$(OBJDIR)/player.o \
 	$(OBJDIR)/test_terrain.o \
 
@@ -276,6 +277,9 @@ $(OBJDIR)/controller.o: ../src/controller.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/terrain.o: ../src/terrain.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/obstacle.o: ../src/obstacle.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(CXXFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/player.o: ../src/player.cpp
