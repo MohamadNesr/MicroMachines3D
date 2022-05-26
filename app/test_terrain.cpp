@@ -33,7 +33,7 @@ Mesh make_grid( )
 
 void playerCollision(Player &p1, Player &p2){
   
-  if(distance(p1.position_, p2.position_) <=1){
+  if(distance(p1.position_, p2.position_) <=1.3){
     std::cout<<" collision !"<< std::endl;
     p1.speed_ =Vector(0,0,0);
     p2.speed_ =Vector(0,0,0);
@@ -50,7 +50,16 @@ void playerCollision(Player &p1, Player &p2){
   }
     //std::cout<<" pas de collision"<< std::endl;
 }
-
+void playerObstacleCollision(Player &p, Obstacle &o){
+  
+  if(distance(p.position_, o.position_) <=1){
+    std::cout<<" collision !"<< std::endl;
+    p.speed_ =Vector(0,0,0);
+    p.position_ = p.position_ - p.direction_*0.2;
+    p.forward_ = false;
+  }
+    //std::cout<<" pas de collision"<< std::endl;
+}
 class Play : public App
 {
 public:
@@ -68,8 +77,8 @@ public:
         vehicule1_.default_color(Color(1.0f, 0.f, 0.f)) ;
         vehicule2_ = read_mesh(smart_path("../assets/mmachine.obj")) ;
         vehicule2_.default_color(Color(0.0f, 0.f, 1.f)) ;
-        obstacle_ = read_mesh(smart_path("../assets/tree.obj"));
-        obstacle_.default_color(Color(0.0f, 1.f, 0.f)) ;
+        obstacle_ = read_mesh(smart_path("../assets/woodenCrate.obj"));
+        obstacle_.default_color(Color(2.0f, 1.f, 0.5f)) ;
 
         joueur1_.set_terrain(&terrain_) ;
         joueur1_.set_controller(&controller1_) ;
@@ -81,9 +90,9 @@ public:
         joueur2_.spawn_at(Point(-0.60,0,0), Vector(0,1,0)) ;
         joueur2_.activate() ;
 
-        arbre_.set_terrain(&terrain_);
-        arbre_.spawn_at(Point(1,4,2), Vector(0,1,0));
-        arbre_.activate();
+        boite_.set_terrain(&terrain_);
+        boite_.spawn_at(Point(1,4,2), Vector(0,1,0));
+        boite_.activate();
 
        m_camera.lookat(Point(-20.f, -20.f, 0.f), Point(20.f, 20.f, 20.f));
 
@@ -125,8 +134,8 @@ public:
         draw(vehicule1_, player1_pos, m_camera) ;
         Transform player2_pos = joueur2_.transform() ;
         draw(vehicule2_, player2_pos, m_camera) ;
-        Transform arbre_pos = arbre_.transform()* RotationX(90) * Scale(0.2,0.2,0.2);
-        draw(obstacle_, arbre_pos, m_camera) ;
+        Transform boite_pos = boite_.transform()* RotationX(90) * Scale(0.2,0.2,0.2);
+        draw(obstacle_, boite_pos, m_camera) ;
 
         Point pmin, pmax;
         pmin = Point(std::min(joueur1_.position_.x, joueur2_.position_.x),
@@ -144,6 +153,8 @@ public:
       //  }
         
         playerCollision(joueur1_, joueur2_);
+        playerObstacleCollision(joueur1_,boite_);
+        playerObstacleCollision(joueur2_,boite_);
        // joueur1_.hasCollided();
         terrain_.draw(m_camera.view(), m_camera.projection(window_width(), window_height(), 45.f)) ;
 
@@ -164,7 +175,7 @@ protected:
     Mesh obstacle_;
     Player joueur1_;
     Player joueur2_;
-    Obstacle arbre_;
+    Obstacle boite_;
     KeyboardController controller1_ ;
     KeyboardController controller2_ ;
 
