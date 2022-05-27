@@ -8,6 +8,9 @@
 #include "draw.h"
 #include "app.h"
 
+#include "camera.hpp"
+#include <iostream>
+
 class Play : public App
 {
 public:
@@ -36,7 +39,12 @@ public:
         joueur2_.spawn_at(Point(1,1,0), Vector(0,1,0)) ;
         joueur2_.activate() ;
 
-        m_camera.lookat(Point(-20.f, -20.f, -20.f), Point(20.f, 20.f, 20.f));
+        //m_camera.lookat(Point(-20.f, -20.f, -20.f), Point(20.f, 20.f, 20.f));
+        m_camera.m_from = joueur1_.position_ - 10 * joueur1_.direction_ + Point(-10, 10, 10);
+        m_camera.m_to = joueur1_.position_;
+        m_camera.m_up = Vector(0, 0, 1);
+        m_camera_view_matrix = Lookat(m_camera.m_from, m_camera.m_to, m_camera.m_up);
+        m_camera_projection_matrix = Perspective(45, 4.f/3, 1, 40);
 
         // etat openGL par defaut
         glClearColor(0.2f, 0.2f, 0.2f, 1.f);        // couleur par defaut de la fenetre
@@ -62,21 +70,31 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // deplace la camera
-        int mx, my;
+        /*int mx, my;
         unsigned int mb= SDL_GetRelativeMouseState(&mx, &my);
         if(mb & SDL_BUTTON(1))              // le bouton gauche est enfonce
             m_camera.rotation(mx, my);
         else if(mb & SDL_BUTTON(3))         // le bouton droit est enfonce
             m_camera.move(mx);
         else if(mb & SDL_BUTTON(2))         // le bouton du milieu est enfonce
-            m_camera.translation((float) mx / (float) window_width(), (float) my / (float) window_height());
+            m_camera.translation((float) mx / (float) window_width(), (float) my / (float) window_height());*/
 
         Transform player1_pos = joueur1_.transform() ;
-        draw(vehicule1_, player1_pos, m_camera) ;
-        Transform player2_pos = joueur2_.transform() ;
-        draw(vehicule2_, player2_pos, m_camera) ;
 
-        terrain_.draw(m_camera.view(), m_camera.projection(window_width(), window_height(), 45.f)) ;
+        Vector from_to = Vector(m_camera.m_from, joueur1_.position_);
+        if (distance(joueur1_.position_, m_camera.m_from) > 11) {
+            m_camera.m_from = m_camera.m_from + (from_to / 100);
+            m_camera.m_from.z = 10;
+        }
+        m_camera.m_to = joueur1_.position_;
+        //std::cout << joueur1_.position_ << " " << joueur1_.direction_ << std::endl;
+
+        m_camera_view_matrix = Lookat(m_camera.m_from, m_camera.m_to, m_camera.m_up);
+        draw(vehicule1_, player1_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
+        Transform player2_pos = joueur2_.transform() ;
+        draw(vehicule2_, player2_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
+
+        terrain_.draw(m_camera_view_matrix, m_camera_projection_matrix) ;
 
         //reset
         if(key_state('r')) {
@@ -97,7 +115,10 @@ protected:
 
     FlatTerrain terrain_ ;
 
-    Orbiter m_camera;
+    //Orbiter m_camera;
+    Camera m_camera;
+    Transform m_camera_view_matrix;
+    Transform m_camera_projection_matrix;
 };
 
 
