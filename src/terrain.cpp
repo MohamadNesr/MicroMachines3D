@@ -95,3 +95,36 @@ void ImgTerrain::project(const Point& from, Point& to, Vector& n) const {
 void ImgTerrain::draw(const Transform& v, const Transform& p) {
   ::draw(mesh_, Identity(), v, p) ;
 }
+
+void ImgTerrain::setCheckpoints(){
+  checkpoints_.push_back(Point(0.6, 0, 0));
+  checkpoints_.push_back(Point(2.0, 3.0, 0));
+  checkpoints_.push_back(Point(5.5, 3.0, 0));
+  checkpoints_.push_back(Point(8.3, 2.36, 0));
+  checkpoints_.push_back(Point(12.3, 1.0, 0));
+  checkpoints_.push_back(Point(15.4, 4.3, 0));
+  checkpoints_.push_back(Point(14.35, 13.33, 0));
+  checkpoints_.push_back(Point(9.77, 15.34, 0));
+  checkpoints_.push_back(Point(3.5, 12.35, 0));
+  checkpoints_.push_back(Point(-1.3, 10.2, 0));
+  checkpoints_.push_back(Point(-4.3, 2.66, 0));
+  checkpoints_.push_back(Point(-3.3, -4.5, 0));
+  checkpoints_.push_back(Point(-5.2, -10.2, 0));
+  checkpoints_.push_back(Point(-10.8, -7, 0));
+  checkpoints_.push_back(Point(-12, 0, 0));
+  checkpoints_.push_back(Point(-10.5, 7.42, 0));
+  checkpoints_.push_back(Point(-15.1, 5, 0));
+  checkpoints_.push_back(Point(-15.9, -3.12, 0));
+  checkpoints_.push_back(Point(-15.11, -12.2, 0));
+  checkpoints_.push_back(Point(-10.5, -14.95, 0));
+  checkpoints_.push_back(Point(-5.75, -15.2, 0));
+  checkpoints_.push_back(Point(6.44, -14.37, 0));
+  checkpoints_.push_back(Point(8.29, -9.17, 0));
+  checkpoints_.push_back(Point(5.2, -5.5, 0));
+  checkpoints_.push_back(Point(0.5, 0.5, 0));
+
+}
+
+std::vector<Point> ImgTerrain::getCheckpoints() const {
+  return checkpoints_;
+}

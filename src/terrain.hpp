@@ -24,12 +24,13 @@ class FlatTerrain : public Terrain {
     Mesh mesh_ ;
 } ;
 
-
 class ImgTerrain : public Terrain {
   public :
     ImgTerrain(const Point& pmin, const Point& pmax, const char* filename) ;
     void project(const Point& from, Point& to, Vector& n) const ;
     void draw(const Transform& v, const Transform& p) ;
+    std::vector<Point> getCheckpoints() const;
+    void setCheckpoints();
 
   private :
     Color pixel(float x, float y) const ;
@@ -39,6 +40,7 @@ class ImgTerrain : public Terrain {
 
     Vector scale_ ;
     Point origin_ ;
+    std::vector<Point> checkpoints_ ;
 } ;
 
 #endif

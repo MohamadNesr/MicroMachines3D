@@ -151,3 +151,17 @@ void Player::project(Point& candidate) {
   //project direction
   direction_ = normalize(direction_ - dot(direction_, normal_)*normal_) ;
 }
+
+void Player::add_checkpoint(std::vector<Point> cp_){
+  for(unsigned int i =1; i< cp_.size();i++){
+    if(position_.x > cp_[i].x -2 && position_.x < cp_[i].x + 2
+    && position_.y > cp_[i].y -2 && position_.y < cp_[i].y + 2){
+        if(last_visited_checkpoints_.x == cp_[i-1].x){
+        last_visited_checkpoints_ = cp_[i];
+        nb_visited_checkpoints++;
+        std::cout<<"last checkpoint : "<< last_visited_checkpoints_.x << " , " << last_visited_checkpoints_.y<< std::endl;
+        std::cout<<"nb checkpoints : "<< nb_visited_checkpoints<< std::endl;
+        }
+    }
+  }
+}

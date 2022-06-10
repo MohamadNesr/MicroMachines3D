@@ -9,6 +9,7 @@
 #include "draw.h"
 #include "app.h"
 
+bool END_GAME = false;
 // utilitaire. creation d'une grille / repere.
 Mesh make_grid( )
 {
@@ -33,7 +34,7 @@ Mesh make_grid( )
 
 void playerCollision(Player &p1, Player &p2){
   
-  if(distance(p1.position_, p2.position_) <=1.3){
+  if(distance(p1.position_, p2.position_) <=1){
     std::cout<<" collision !"<< std::endl;
     p1.speed_ =Vector(0,0,0);
     p2.speed_ =Vector(0,0,0);
@@ -52,7 +53,7 @@ void playerCollision(Player &p1, Player &p2){
 }
 void playerObstacleCollision(Player &p, Obstacle &o){
   
-  if(distance(p.position_, o.position_) <=1){
+  if(distance(p.position_, o.position_) <=0.8){
     std::cout<<" collision !"<< std::endl;
     p.speed_ =Vector(0,0,0);
     p.position_ = p.position_ - p.direction_*0.2;
@@ -73,26 +74,40 @@ public:
     
     int init( )
     {
+        terrain_.setCheckpoints();
+        cp_ = terrain_.getCheckpoints();
         vehicule1_ = read_mesh(smart_path("../assets/mmachine.obj")) ;
         vehicule1_.default_color(Color(1.0f, 0.f, 0.f)) ;
         vehicule2_ = read_mesh(smart_path("../assets/mmachine.obj")) ;
         vehicule2_.default_color(Color(0.0f, 0.f, 1.f)) ;
         obstacle_ = read_mesh(smart_path("../assets/woodenCrate.obj"));
         obstacle_.default_color(Color(2.0f, 1.f, 0.5f)) ;
+        chckpt_ = read_mesh(smart_path("../assets/flag.obj"));
+        chckpt_.default_color(Color(2.0f, 2.0f, 0.0f)) ;
 
         joueur1_.set_terrain(&terrain_) ;
         joueur1_.set_controller(&controller1_) ;
         joueur1_.spawn_at(Point(0.60,0,0), Vector(0,1,0)) ;
+        joueur1_.last_visited_checkpoints_ = Point(0.60,0,0);
         joueur1_.activate() ;
 
         joueur2_.set_terrain(&terrain_) ;
         joueur2_.set_controller(&controller2_) ;
         joueur2_.spawn_at(Point(-0.60,0,0), Vector(0,1,0)) ;
+        joueur2_.last_visited_checkpoints_ = Point(0.60,0,0);
         joueur2_.activate() ;
 
         boite_.set_terrain(&terrain_);
         boite_.spawn_at(Point(1,4,2), Vector(0,1,0));
         boite_.activate();
+
+        for(unsigned int i=0;i< cp_.size(); i++){
+          cpoint.set_terrain(&terrain_);
+          std::cout<< "checkpoint initialized "<<std::endl;
+          cpoint.spawn_at(cp_[i], Vector(0,1,0));
+          flag_.push_back(cpoint);
+          cpoint.activate();
+        }
 
        m_camera.lookat(Point(-20.f, -20.f, 0.f), Point(20.f, 20.f, 20.f));
 
@@ -134,37 +149,56 @@ public:
         draw(vehicule1_, player1_pos, m_camera) ;
         Transform player2_pos = joueur2_.transform() ;
         draw(vehicule2_, player2_pos, m_camera) ;
-        Transform boite_pos = boite_.transform()* RotationX(90) * Scale(0.2,0.2,0.2);
+        Transform boite_pos = boite_.transform()* RotationX(90) * Scale(0.1,0.1,0.1);
         draw(obstacle_, boite_pos, m_camera) ;
 
-        Point pmin, pmax;
-        pmin = Point(std::min(joueur1_.position_.x, joueur2_.position_.x),
-                    std::min(joueur1_.position_.y, joueur2_.position_.y),
-                    std::min(joueur1_.position_.z, joueur2_.position_.z));
-        pmax = Point(std::max(joueur1_.position_.x, joueur2_.position_.x),
-                    std::max(joueur1_.position_.y, joueur2_.position_.y),
-                    std::max(joueur1_.position_.z, joueur2_.position_.z));
-
-        float distJ1J2 = distance(joueur1_.position_,joueur2_.position_);
-      //  if(distJ1J2> 30){
-      //      m_camera.lookat(joueur1_.position_, distance(pmin,pmax)+10);
-      //  } else{
-            //m_camera.lookat(Point(center(joueur1_.position_ ,joueur2_.position_)), distance(pmin,pmax)+10);
-      //  }
-        
+        for(unsigned int i=0;i< flag_.size(); i++){
+          Transform flag_pos = flag_[i].transform()*RotationX(90)*Scale(0.05,0.05,0.05);
+          draw(chckpt_,flag_pos, m_camera) ;
+        }
+  
         playerCollision(joueur1_, joueur2_);
         playerObstacleCollision(joueur1_,boite_);
         playerObstacleCollision(joueur2_,boite_);
-       // joueur1_.hasCollided();
+        // joueur1_.hasCollided();
         terrain_.draw(m_camera.view(), m_camera.projection(window_width(), window_height(), 45.f)) ;
-
+        joueur1_.add_checkpoint(cp_);
+        joueur2_.add_checkpoint(cp_);
+        if(!END_GAME){
+          if(key_state('p')){
+            if(joueur1_.nb_visited_checkpoints > joueur2_.nb_visited_checkpoints){
+              std::cout<<"Le joueur 1 gagne! "<<std::endl;
+            }
+            if(joueur1_.nb_visited_checkpoints < joueur2_.nb_visited_checkpoints){
+              std::cout<<"Le joueur 2 gagne! "<<std::endl;
+            }
+            if(joueur1_.nb_visited_checkpoints == joueur2_.nb_visited_checkpoints){
+              std::cout<<"EGALITE ! "<<std::endl;
+            }
+          }
+          if(joueur1_.nb_visited_checkpoints == cp_.size()){
+              std::cout<<"Victoire du joueur 1! "<<std::endl;
+              END_GAME = true;
+          }
+          if(joueur2_.nb_visited_checkpoints == cp_.size()){
+              END_GAME = true;
+              std::cout<<"Victoire du joueur 2! "<<std::endl;
+          }
+        }
         //reset
         if(key_state('r')) {
           joueur1_.spawn_at(Point(0.60,0,0), Vector(0,1,0)) ;
+          joueur1_.last_visited_checkpoints_ = Point(0.60,0,0);
+          joueur1_.nb_visited_checkpoints = 1;
           joueur1_.activate() ;
           joueur2_.spawn_at(Point(-0.60,0,0), Vector(0,1,0)) ;
+          joueur2_.last_visited_checkpoints_ = Point(0.60,0,0);
+          joueur2_.nb_visited_checkpoints = 1;
           joueur2_.activate() ;
+          END_GAME = false;
+
         }
+        
 
         return 1;
     }
@@ -173,12 +207,15 @@ protected:
     Mesh vehicule1_;
     Mesh vehicule2_;
     Mesh obstacle_;
+    Mesh chckpt_;
     Player joueur1_;
     Player joueur2_;
     Obstacle boite_;
+    std::vector<Obstacle> flag_;
+    Obstacle cpoint;
     KeyboardController controller1_ ;
     KeyboardController controller2_ ;
-
+    std::vector<Point> cp_;
     ImgTerrain terrain_ ;
 
     Orbiter m_camera;

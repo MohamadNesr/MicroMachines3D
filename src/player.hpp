@@ -22,6 +22,7 @@ class Player {
     //parameters
     void set_terrain(const Terrain* terrain) ;
     void set_controller(const Controller* controller) ;
+    void add_checkpoint(std::vector<Point> cp_) ;
     
     //environment
     const Terrain* terrain_ ;
@@ -37,11 +38,13 @@ class Player {
     Vector speed_ ;
     int last_time_ ;
     void step() ;
+    int nb_visited_checkpoints = 1;
 
     //elements
     Point position_ ;
     Vector direction_ ;
     Vector normal_ ;
+    Point last_visited_checkpoints_ ;
 
     //parameters
     float acceleration_ ;
