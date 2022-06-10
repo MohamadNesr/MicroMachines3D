@@ -101,7 +101,7 @@ void ImgTerrain::setCheckpoints(){
   checkpoints_.push_back(Point(2.0, 3.0, 0));
   checkpoints_.push_back(Point(5.5, 3.0, 0));
   checkpoints_.push_back(Point(8.3, 2.36, 0));
-  checkpoints_.push_back(Point(12.3, 1.0, 0));
+  checkpoints_.push_back(Point(13, 0.0, 0));
   checkpoints_.push_back(Point(15.4, 4.3, 0));
   checkpoints_.push_back(Point(14.35, 13.33, 0));
   checkpoints_.push_back(Point(9.77, 15.34, 0));

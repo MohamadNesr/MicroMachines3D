@@ -8,8 +8,10 @@
 #include "orbiter.h"
 #include "draw.h"
 #include "app.h"
+#include "camera.hpp"
 
 bool END_GAME = false;
+int ZFAR = 25;
 // utilitaire. creation d'une grille / repere.
 Mesh make_grid( )
 {
@@ -34,7 +36,7 @@ Mesh make_grid( )
 
 void playerCollision(Player &p1, Player &p2){
   
-  if(distance(p1.position_, p2.position_) <=1){
+  if(distance(p1.position_, p2.position_) <=0.85){
     std::cout<<" collision !"<< std::endl;
     p1.speed_ =Vector(0,0,0);
     p2.speed_ =Vector(0,0,0);
@@ -53,7 +55,7 @@ void playerCollision(Player &p1, Player &p2){
 }
 void playerObstacleCollision(Player &p, Obstacle &o){
   
-  if(distance(p.position_, o.position_) <=0.8){
+  if(distance(p.position_, o.position_) <= 1){
     std::cout<<" collision !"<< std::endl;
     p.speed_ =Vector(0,0,0);
     p.position_ = p.position_ - p.direction_*0.2;
@@ -97,10 +99,33 @@ public:
         joueur2_.last_visited_checkpoints_ = Point(0.60,0,0);
         joueur2_.activate() ;
 
-        boite_.set_terrain(&terrain_);
-        boite_.spawn_at(Point(1,4,2), Vector(0,1,0));
-        boite_.activate();
-
+        obs_.push_back(Point(0, 3.75, 0));
+        obs_.push_back(Point(12.5, -2.0, 0));
+        obs_.push_back(Point(10, 12.4, 0));
+        obs_.push_back(Point(8.3, 7.36, 0));
+        obs_.push_back(Point(11.77, 14.34, 0));
+        obs_.push_back(Point(12.57, 1.2, 0));
+        obs_.push_back(Point(-2.6, 0, 0));
+        obs_.push_back(Point(-1, 9.2, 0));
+        obs_.push_back(Point(-7.5, -12.25, 0));
+        obs_.push_back(Point(-10.4, 10.5, 0));
+        obs_.push_back(Point(-12.4, 9.4, 0));
+        obs_.push_back(Point(-10.3, -10.2, 0));
+        obs_.push_back(Point(-16, -10, 0));
+        obs_.push_back(Point(-6, -12, 0));
+        obs_.push_back(Point(-1.5, -17.3, 0));
+        obs_.push_back(Point(-1.4, -13.3, 0));
+        obs_.push_back(Point(6, -11.12, 0));
+        obs_.push_back(Point(7.6, -4.5, 0));
+        obs_.push_back(Point(9.6, -5.5, 0));
+        obs_.push_back(Point(1, -1.5, 0));
+        
+        for(unsigned int i=0;i< obs_.size(); i++){
+          boite_.set_terrain(&terrain_);
+          boite_.spawn_at(obs_[i], Vector(0,1,0));
+          boites_.push_back(boite_);
+          boite_.activate();
+        }
         for(unsigned int i=0;i< cp_.size(); i++){
           cpoint.set_terrain(&terrain_);
           std::cout<< "checkpoint initialized "<<std::endl;
@@ -109,7 +134,11 @@ public:
           cpoint.activate();
         }
 
-       m_camera.lookat(Point(-20.f, -20.f, 0.f), Point(20.f, 20.f, 20.f));
+        m_camera.m_from = joueur1_.position_ - 10 * joueur1_.direction_ + Point(-10, 10, 10);
+        m_camera.m_to = joueur1_.position_;
+        m_camera.m_up = Vector(0, 0, 1);
+        m_camera_view_matrix = Lookat(m_camera.m_from, m_camera.m_to, m_camera.m_up);
+        m_camera_projection_matrix = Perspective(45, 4.f/3, 1, 40);
 
         // etat openGL par defaut
         glClearColor(0.2f, 0.2f, 0.2f, 1.f);        // couleur par defaut de la fenetre
@@ -135,38 +164,60 @@ public:
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // deplace la camera
-        int mx, my;
-        unsigned int mb= SDL_GetRelativeMouseState(&mx, &my);
-        if(mb & SDL_BUTTON(1))              // le bouton gauche est enfonce
-            m_camera.rotation(mx, my);
-        else if(mb & SDL_BUTTON(3))         // le bouton droit est enfonce
-            m_camera.move(mx);
-        else if(mb & SDL_BUTTON(2))         // le bouton du milieu est enfonce
-            m_camera.translation((float) mx / (float) window_width(), (float) my / (float) window_height());
 
         Transform player1_pos = joueur1_.transform() ;
-        draw(vehicule1_, player1_pos, m_camera) ;
         Transform player2_pos = joueur2_.transform() ;
-        draw(vehicule2_, player2_pos, m_camera) ;
         Transform boite_pos = boite_.transform()* RotationX(90) * Scale(0.1,0.1,0.1);
-        draw(obstacle_, boite_pos, m_camera) ;
+        Vector central_pos = Vector((joueur1_.position_.x+joueur2_.position_.x)/2,
+                                    (joueur1_.position_.y+joueur2_.position_.y)/2,
+                                    (joueur1_.position_.z+joueur2_.position_.z)/2);
+        float distJ1J2 = distance(joueur1_.position_, joueur2_.position_);
+        
+        Vector from_to = Vector(m_camera.m_from, central_pos+Point(0,0,0));
+        m_camera.m_from = m_camera.m_from + (from_to / 100);
+        m_camera.m_from.z = ZFAR;
+        m_camera.m_to = central_pos + Point(0,0,0);
+       
+        if(distJ1J2 > 9){
+          if(joueur1_.nb_visited_checkpoints > joueur2_.nb_visited_checkpoints){
+                m_camera.m_to = joueur1_.position_;
+          }
+          if(joueur1_.nb_visited_checkpoints < joueur2_.nb_visited_checkpoints){
+                m_camera.m_to = joueur2_.position_;
+          }
+        }
+        
+        m_camera_view_matrix = Lookat(m_camera.m_from, m_camera.m_to, m_camera.m_up);
+
+        draw(vehicule1_, player1_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
+        draw(vehicule2_, player2_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
+        draw(obstacle_, boite_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
+
+        for(unsigned int i=0;i< boites_.size(); i++){
+          Transform boite_pos = boites_[i].transform()*RotationX(90)*Scale(0.15,0.15,0.15);
+          draw(obstacle_, boite_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
+          playerObstacleCollision(joueur1_,boites_[i]);
+          playerObstacleCollision(joueur2_,boites_[i]);
+        }
 
         for(unsigned int i=0;i< flag_.size(); i++){
           Transform flag_pos = flag_[i].transform()*RotationX(90)*Scale(0.05,0.05,0.05);
-          draw(chckpt_,flag_pos, m_camera) ;
+          draw(chckpt_,flag_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
         }
-  
+
         playerCollision(joueur1_, joueur2_);
-        playerObstacleCollision(joueur1_,boite_);
-        playerObstacleCollision(joueur2_,boite_);
+        if(key_state('l')){
+          std::cout<<"Position "<< joueur1_.position_.x << " , "<<joueur1_.position_.y<<std::endl;
+
+        }
+
         // joueur1_.hasCollided();
-        terrain_.draw(m_camera.view(), m_camera.projection(window_width(), window_height(), 45.f)) ;
+        terrain_.draw(m_camera_view_matrix, m_camera_projection_matrix) ;
         joueur1_.add_checkpoint(cp_);
         joueur2_.add_checkpoint(cp_);
         if(!END_GAME){
           if(key_state('p')){
-            if(joueur1_.nb_visited_checkpoints > joueur2_.nb_visited_checkpoints){
+            if(joueur1_.nb_visited_checkpoints >= joueur2_.nb_visited_checkpoints){
               std::cout<<"Le joueur 1 gagne! "<<std::endl;
             }
             if(joueur1_.nb_visited_checkpoints < joueur2_.nb_visited_checkpoints){
@@ -211,14 +262,19 @@ protected:
     Player joueur1_;
     Player joueur2_;
     Obstacle boite_;
+    std::vector<Obstacle> boites_;
     std::vector<Obstacle> flag_;
     Obstacle cpoint;
     KeyboardController controller1_ ;
     KeyboardController controller2_ ;
     std::vector<Point> cp_;
+    std::vector<Point> obs_;
     ImgTerrain terrain_ ;
 
-    Orbiter m_camera;
+    // Orbiter m_camera;
+    Camera m_camera;
+    Transform m_camera_view_matrix;
+    Transform m_camera_projection_matrix;
 };
 
 
