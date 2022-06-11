@@ -6,7 +6,7 @@ Obstacle::Obstacle() :
   terrain_(nullptr),
   active_(false),
   position_(0.f, 0.f, 0.f),
-  direction_(0.f, 0.f, 1.f),
+  direction_(0.f, 0.f, 0.f),
   normal_(0.f, 0.f, 0.f)
 {}
 
