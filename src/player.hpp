@@ -23,6 +23,7 @@ class Player {
     void set_terrain(const Terrain* terrain) ;
     void set_controller(const Controller* controller) ;
     void add_checkpoint(std::vector<Point> cp_) ;
+    void oil_trap(Point& oil_) ;
     
     //environment
     const Terrain* terrain_ ;

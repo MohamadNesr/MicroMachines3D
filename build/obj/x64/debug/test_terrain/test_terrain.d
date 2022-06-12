@@ -8,7 +8,7 @@ obj/x64/debug/test_terrain/test_terrain.o: ../app/test_terrain.cpp \
  ../../src/gKit/image_io.h ../../src/gKit/wavefront.h \
  ../../src/gKit/mesh.h ../../src/gKit/draw.h ../../src/gKit/orbiter.h \
  ../../src/gKit/window.h ../../src/gKit/program.h ../../src/gKit/app.h \
- ../src/camera.hpp
+ ../src/camera.hpp ../../src/gKit/text.h
 
 ../src/terrain.hpp:
 
@@ -63,3 +63,5 @@ obj/x64/debug/test_terrain/test_terrain.o: ../app/test_terrain.cpp \
 ../../src/gKit/app.h:
 
 ../src/camera.hpp:
+
+../../src/gKit/text.h:

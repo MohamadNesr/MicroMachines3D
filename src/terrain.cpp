@@ -90,6 +90,7 @@ void ImgTerrain::project(const Point& from, Point& to, Vector& n) const {
     to = from ;
   }
   n = Vector(0.f, 0.f, 1.f) ;
+
 }
 
 void ImgTerrain::draw(const Transform& v, const Transform& p) {

@@ -165,3 +165,12 @@ void Player::add_checkpoint(std::vector<Point> cp_){
     }
   }
 }
+
+void Player::oil_trap(Point& oil_){
+  if(position_.x > oil_.x -1 && position_.x < oil_.x + 1
+      && position_.y > oil_.y -1 && position_.y < oil_.y + 1){
+        speed_ = speed_*0.7;
+        direction_ = Rotation(normal_, turning_angle_)(direction_) ;
+  }
+
+}

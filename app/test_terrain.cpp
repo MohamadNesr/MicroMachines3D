@@ -10,9 +10,10 @@
 #include "draw.h"
 #include "app.h"
 #include "camera.hpp"
+#include "text.h"
 
 bool END_GAME = false;
-int ZFAR = 35;
+int ZFAR = 18;
 // utilitaire. creation d'une grille / repere.
 Mesh make_grid( )
 {
@@ -106,6 +107,8 @@ public:
         obstacle_.default_color(Color(2.0f, 1.f, 0.5f)) ;
         chckpt_ = read_mesh(smart_path("../assets/flag.obj"));
         chckpt_.default_color(Color(2.0f, 2.0f, 0.0f)) ;
+        oil_ = read_mesh(smart_path("../assets/oil.obj"));
+        oil_.default_color(Color(0.35f, 0.40f, 0.25f)) ;
 
         joueur1_.set_terrain(&terrain_) ;
         joueur1_.set_controller(&controller1_) ;
@@ -119,6 +122,7 @@ public:
         joueur2_.last_visited_checkpoints_ = Point(0.60,0,0);
         joueur2_.activate() ;
 
+        //-------------------------------- OBSTACLES VECTOR --------------------------------------------------------------------------
         obs_.push_back(Point(0, 3.75, 0));
         obs_.push_back(Point(12.5, -2.0, 0));
         obs_.push_back(Point(10, 12.4, 0));
@@ -137,7 +141,7 @@ public:
         obs_.push_back(Point(-1.4, -13.3, 0));
         obs_.push_back(Point(6, -11.12, 0));
         obs_.push_back(Point(7.6, -4.5, 0));
-        obs_.push_back(Point(9.6, -5.5, 0));
+        obs_.push_back(Point(9.6, -5, 0));
         obs_.push_back(Point(1, -1.5, 0));
         
         for(unsigned int i=0;i< obs_.size(); i++){
@@ -146,6 +150,27 @@ public:
           boites_.push_back(boite_);
           boite_.activate();
         }
+        // ----------------------------------- OIL PUDDLES -------------------------------------------
+        puddles_.push_back(Point(15, 3, 0));
+        puddles_.push_back(Point(-12, -1.7, 0));
+        puddles_.push_back(Point(8, 12, 0));
+        puddles_.push_back(Point(-3, -2, 0));
+        puddles_.push_back(Point(-13, 6, 0));
+        puddles_.push_back(Point(-11, -16, 0));
+        puddles_.push_back(Point(9, -11, 0));
+
+
+        for(unsigned int i=0;i< puddles_.size(); i++){
+          huile_.set_terrain(&terrain_);
+          huile_.spawn_at(puddles_[i], Vector(0,1,0));
+          floques_.push_back(huile_);
+          huile_.activate();
+        }
+        huile_.set_terrain(&terrain_);
+        huile_.spawn_at(Point(3,5,0), Vector(0,1,0));
+        huile_.activate();
+
+        // ----------------------------------- CHECKPOINTS --------------------------------------------
         for(unsigned int i=0;i< cp_.size(); i++){
           cpoint.set_terrain(&terrain_);
           std::cout<< "checkpoint initialized "<<std::endl;
@@ -153,14 +178,15 @@ public:
           flag_.push_back(cpoint);
           cpoint.activate();
         }
-
+        
+        // ------------------------------------ CAMERA -------------------------------------------
         m_camera.m_from = joueur1_.position_ - 10 * joueur1_.direction_ + Point(-10, 10, 10);
         m_camera.m_to = joueur1_.position_;
         m_camera.m_up = Vector(0, 0, 1);
         m_camera_view_matrix = Lookat(m_camera.m_from, m_camera.m_to, m_camera.m_up);
         m_camera_projection_matrix = Perspective(45, 4.f/3, 1, 40);
 
-
+        // ------------------------------------ QUAD -----------------------------------------------
         std::cout 
           << quad_.default_color().r
           << " "
@@ -169,15 +195,18 @@ public:
           << quad_.default_color().b 
           << std::endl ;
 
-        quad_.vertex(-0.9f, 0.9f, 0.f) ;
-        quad_.vertex(-0.9f, 0.7f, 0.f) ;
-        quad_.vertex(0.9f, 0.7f, 0.f) ;
-        quad_.vertex(0.9f, 0.9f, 0.f) ;
+        quad_.vertex(-0.9f, 0.99f, 0.f) ;
+        quad_.vertex(-0.9f, 0.8f, 0.f) ;
+        quad_.vertex(0.9f, 0.8f, 0.f) ;
+        quad_.vertex(0.9f, 0.99f, 0.f) ;
 
         quad_.triangle(0, 1, 2) ;
         quad_.triangle(0, 2, 3) ;
 
         texture_ = read_texture(0, "/tmp/transparent.png") ;
+        score1_ = read_texture(0, "assets/0.png");
+        score2_ = read_texture(0, "assets/0.png");
+
 
         // etat openGL par defaut
         glClearColor(0.2f, 0.2f, 0.2f, 1.f);        // couleur par defaut de la fenetre
@@ -205,9 +234,10 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         DrawParam param ;
         param.texture(texture_) ;
+        param.alpha_texture(texture_,0.5f) ;
         param.draw(quad_) ;
 
-
+        // ------------------------- CAMERA INIT --------------------------------------------------------------------------
         Vector central_pos = Vector((joueur1_.position_.x+joueur2_.position_.x)/2,
                                     (joueur1_.position_.y+joueur2_.position_.y)/2,
                                     (joueur1_.position_.z+joueur2_.position_.z)/2);
@@ -215,7 +245,7 @@ public:
         
         Vector from_to = Vector(m_camera.m_from, central_pos + Point(0,0,0));
         m_camera.m_from = m_camera.m_from + (from_to / 100);
-        m_camera.m_from.z = distJ1J2 + ZFAR/2;
+        m_camera.m_from.z = distJ1J2 + ZFAR;
         m_camera.m_to = central_pos + Point(0,0,0);
        
         //  ----------------------- CHECKING WHO IS WINNING ------------------------------------------------------------------
@@ -236,7 +266,7 @@ public:
         }
 
         // -------------------------- FOCUSING ON WINNING PLAYER IF DISTANCE IS BIG --------------------------------------------
-        if(distJ1J2 > ZFAR/2-5){
+        if(distJ1J2 > ZFAR){
           if(joueur1_.isWinning){
                 m_camera.m_to = joueur1_.position_;
           } else if(joueur2_.isWinning){
@@ -262,20 +292,27 @@ public:
         // -------------------------- ADDING ALL ELEMENTS AND COLLISISONS --------------------------------------------------------
         Transform player1_pos = joueur1_.transform() ;
         Transform player2_pos = joueur2_.transform() ;
-        Transform boite_pos = boite_.transform()* RotationX(90) * Scale(0.1,0.1,0.1);
+        Transform boite_pos = boite_.transform() * RotationX(90) * Scale(0.1,0.1,0.1);
         draw(vehicule1_, player1_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
         draw(vehicule2_, player2_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
-        draw(obstacle_, boite_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
+       // draw(obstacle_, boite_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
 
         for(unsigned int i=0;i< boites_.size(); i++){
-          Transform boite_pos = boites_[i].transform()*RotationX(90)*Scale(0.15,0.15,0.15);
+          Transform boite_pos = boites_[i].transform() * RotationX(90) * Scale(0.15,0.15,0.15);
           draw(obstacle_, boite_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
           playerObstacleCollision(joueur1_,boites_[i]);
           playerObstacleCollision(joueur2_,boites_[i]);
         }
 
+        for(unsigned int i=0;i< floques_.size(); i++){
+          Transform huile_pos = floques_[i].transform()*RotationX(90);
+          draw(oil_, huile_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
+          joueur1_.oil_trap(puddles_[i]);
+          joueur2_.oil_trap(puddles_[i]);
+        }
+
         for(unsigned int i=0;i< flag_.size(); i++){
-          Transform flag_pos = flag_[i].transform()*RotationX(90)*Scale(0.05,0.05,0.05);
+          Transform flag_pos = flag_[i].transform() * RotationX(90) * Scale(0.05,0.05,0.05);
           draw(chckpt_,flag_pos, m_camera_view_matrix, m_camera_projection_matrix) ;
         }
 
@@ -292,7 +329,7 @@ public:
         // ---------------------------- CHECK IF A PLAYER COMPLETED HIS LAP TO END ROUND --------------------------------------------
         if(!END_GAME){
           if((joueur1_.nb_visited_checkpoints == cp_.size()) 
-                || (joueur1_.isWinning && distJ1J2>ZFAR/2 + 5)
+                || (joueur1_.isWinning && distJ1J2> ZFAR)
                 || (joueur1_.nb_visited_checkpoints > joueur2_.nb_visited_checkpoints+9)){
               std::cout<<"Victoire du joueur 1! "<<std::endl;
               std::cout<<"Checkpoints difference "<< joueur1_.nb_visited_checkpoints - joueur2_.nb_visited_checkpoints<<std::endl;
@@ -300,7 +337,7 @@ public:
               END_GAME = true;
           }
           if(joueur2_.nb_visited_checkpoints == cp_.size() 
-                || (joueur2_.isWinning && distJ1J2>ZFAR/2 + 5)
+                || (joueur2_.isWinning && distJ1J2>ZFAR)
                 || (joueur2_.nb_visited_checkpoints > joueur1_.nb_visited_checkpoints+9)){
               std::cout<<"Victoire du joueur 2! "<<std::endl;
               std::cout<<"Checkpoints difference "<< joueur2_.nb_visited_checkpoints - joueur1_.nb_visited_checkpoints<<std::endl;
@@ -314,12 +351,24 @@ public:
           if (joueur1_.isWinning){
             p1RoundsWon++;
             END_GAME = false;
-            restart(joueur1_,joueur2_);
+            joueur2_.spawn_at(joueur1_.position_, joueur1_.direction_);
+            joueur1_.speed_ = joueur1_.speed_*0;
+            joueur2_.speed_ = joueur2_.speed_*0;
+            joueur2_.nb_visited_checkpoints = joueur1_.nb_visited_checkpoints;
+            joueur2_.last_visited_checkpoints_ = joueur1_.last_visited_checkpoints_;
+            joueur2_.activate();
+           // restart(joueur1_,joueur2_);
           }
           if(joueur2_.isWinning){
             p2RoundsWon++;
             END_GAME = false;
-            restart(joueur1_,joueur2_);
+            joueur1_.spawn_at(joueur2_.position_, joueur2_.direction_);
+            joueur1_.speed_ = joueur1_.speed_*0;
+            joueur2_.speed_ = joueur2_.speed_*0;
+            joueur1_.nb_visited_checkpoints = joueur2_.nb_visited_checkpoints;
+            joueur1_.last_visited_checkpoints_ = joueur2_.last_visited_checkpoints_;
+            joueur1_.activate();
+            // restart(joueur1_,joueur2_);
           }
           score[0] = p1RoundsWon;
           score[1] = p2RoundsWon;
@@ -356,16 +405,22 @@ protected:
     Mesh vehicule2_;
     Mesh obstacle_;
     Mesh chckpt_;
+    Mesh oil_;
+    Mesh score1_;
+    Mesh score2_;
     Player joueur1_;
     Player joueur2_;
     Obstacle boite_;
+    Obstacle huile_;
     std::vector<Obstacle> boites_;
     std::vector<Obstacle> flag_;
+    std::vector<Obstacle> floques_;
     Obstacle cpoint;
     KeyboardController controller1_ ;
     KeyboardController controller2_ ;
     std::vector<Point> cp_;
     std::vector<Point> obs_;
+    std::vector<Point> puddles_;
     ImgTerrain terrain_ ;
     int p1RoundsWon = 0;
     int p2RoundsWon = 0;
