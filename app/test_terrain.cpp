@@ -325,6 +325,40 @@ public:
         terrain_.draw(m_camera_view_matrix, m_camera_projection_matrix) ;
         joueur1_.add_checkpoint(cp_);
         joueur2_.add_checkpoint(cp_);
+        // ---------------------------- ADD TERRAIN LIMITS TO AVOID OUT OF BOUNDS ---------------------------------------------------
+        if(joueur1_.position_.y > 19.5){
+          joueur1_.speed_ = joueur1_.speed_ * 0;
+          joueur1_.position_.y = joueur1_.position_.y - 1; 
+        }
+        if (joueur1_.position_.y < -19.5){
+          joueur1_.speed_ = joueur1_.speed_ * 0;
+          joueur1_.position_.y = joueur1_.position_.y + 1;
+        }
+        if(joueur2_.position_.y > 19.5){
+          joueur2_.speed_ = joueur2_.speed_ * 0;
+          joueur2_.position_.y = joueur2_.position_.y - 1; 
+        }
+        if (joueur2_.position_.y < -19.5){
+          joueur2_.speed_ = joueur2_.speed_ * 0;
+          joueur2_.position_.y = joueur2_.position_.y + 1;
+        }
+
+        if(joueur1_.position_.x > 19.5){
+          joueur1_.speed_ = joueur1_.speed_ * 0;
+          joueur1_.position_.x = joueur1_.position_.x - 1; 
+        }
+        if (joueur1_.position_.x < -19.5){
+          joueur1_.speed_ = joueur1_.speed_ * 0;
+          joueur1_.position_.x = joueur1_.position_.x + 1;
+        }
+        if(joueur2_.position_.x > 19.5){
+          joueur2_.speed_ = joueur2_.speed_ * 0;
+          joueur2_.position_.x = joueur2_.position_.x - 1; 
+        }
+        if (joueur2_.position_.x < -19.5){
+          joueur2_.speed_ = joueur2_.speed_ * 0;
+          joueur2_.position_.x = joueur2_.position_.x + 1;
+        }
 
         // ---------------------------- CHECK IF A PLAYER COMPLETED HIS LAP TO END ROUND --------------------------------------------
         if(!END_GAME){
